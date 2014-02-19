@@ -109,9 +109,9 @@ def keyboard_handler():
         existing_el = GAME_BOARD.get_el(next_x, next_y)
         if existing_el:
             existing_el.interact(PLAYER)
-# This print statement prints any time interact with something, need some sort of if stmt
+# TODO This print statement prints any time interact with something, need some sort of if stmt
             # print "Your current inventory is: ", PLAYER.inventory
-
+            
         # If there's nothing there _or_ if the existing element is not solid, walk through
         if existing_el is None or not existing_el.SOLID:
             GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
@@ -127,7 +127,7 @@ def keyboard_handler():
 def initialize():
     """Put game initialization code here"""
 
-    #Initialize and register rock 1
+    #Initialize, register, and set on board rock 1
     rock1 = Rock()
     GAME_BOARD.register(rock1)
     GAME_BOARD.set_el(0,0,rock1)
@@ -137,7 +137,7 @@ def initialize():
     GAME_BOARD.register(rock2)
     GAME_BOARD.set_el(4,4, rock2)
 
-    #Intialize and register more rocks
+    #Initialize, register, and set on board rock 2
     rock_position = [(2,1), (1,2), (3,2), (2,3)]
     rocks = []
 
@@ -147,16 +147,15 @@ def initialize():
         GAME_BOARD.set_el(pos[0], pos[1], rock)
         rocks.append(rock)
 
+    # for rock in rocks:
+    #     print rock    
+    # print "The rock1 is at", (rock1.x, rock1.y)
+    # print "The rock2 is at", (rock2.x, rock2.y)
+    # print "Rock 1 image", rock1.IMAGE
+    # print "Rock 2 image", rock2.IMAGE
+
     # Overrides the SOLID attribute of the last rock in the rocks list
     rocks[-1].SOLID = False    
-
-    for rock in rocks:
-        print rock    
-
-    print "The rock1 is at", (rock1.x, rock1.y)
-    print "The rock2 is at", (rock2.x, rock2.y)
-    print "Rock 1 image", rock1.IMAGE
-    print "Rock 2 image", rock2.IMAGE
 
     # Initialize first player as global variable because will interact with other parts of game
     global PLAYER
@@ -168,6 +167,7 @@ def initialize():
     # Prints to the game window
     GAME_BOARD.draw_msg("This game is wicked awesome.")
 
+    # initiatlize, registers and sets the gem on the board
     gem = Gem()
     GAME_BOARD.register(gem)
     GAME_BOARD.set_el(3,1,gem)
