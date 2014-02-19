@@ -62,10 +62,12 @@ class Gem(GameElement):
 
     def interact(self, player):
         player.inventory.append(self)
-        GAME_BOARD.draw_msg("You just acquired a gem! You have %d items!" %(player.inventory, len(player.inventory)))
+        GAME_BOARD.draw_msg("You just acquired a gem! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
 
 ####   End class definitions    ####
 
+
+####   Functions go here    ####
 
 # put outside of initialize() because gets called separately in engine.py
 def keyboard_handler():
@@ -100,24 +102,43 @@ def keyboard_handler():
 
 
 ### TODO check bounds probably goes here somewhere, why doesn't check_bounds() print message when walk off board, as part of get_el, set_el, del_el
+
     if direction:
         next_location = PLAYER.next_pos(direction)
         next_x = next_location[0]
         next_y = next_location[1]
 
-        #Checks what is in the next position
-        existing_el = GAME_BOARD.get_el(next_x, next_y)
-        if existing_el:
-            existing_el.interact(PLAYER)
-# TODO This print statement prints any time interact with something, need some sort of if stmt
-            # print "Your current inventory is: ", PLAYER.inventory
+        # Step 1: Check out of bounds
+        # Check if out of bounds 
+
+        # Step 2: What is in the next position? 
+        #Checks what is in the next position and if the position is off the board
+        print next_x, next_y
+        if not check_bounds2(next_x, next_y):
+            GAME_BOARD.draw_msg("You cannot walk off the board")
+        else: 
+            existing_el = GAME_BOARD.get_el(next_x, next_y)
+            if existing_el:
+                existing_el.interact(PLAYER)
+    # TODO This print statement prints any time interact with something, need some sort of if stmt
+                # print "Your current inventory is: ", PLAYER.inventory
             
-        # If there's nothing there _or_ if the existing element is not solid, walk through
-        if existing_el is None or not existing_el.SOLID:
-            GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
-            GAME_BOARD.set_el(next_x, next_y, PLAYER)
-        else:
-            GAME_BOARD.draw_msg("You cannot walk through a solid object")
+            # Step 3: Check for features of element in next item            
+            # If there's nothing there _or_ if the existing element is not solid, walk through
+            if existing_el is None or not existing_el.SOLID:
+                GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
+                GAME_BOARD.set_el(next_x, next_y, PLAYER)
+            else:
+                GAME_BOARD.draw_msg("You cannot walk through a solid object")
+
+def check_bounds2(x, y):
+    if (0 <= x < GAME_WIDTH) and (0 <= y < GAME_HEIGHT):
+        return True
+    else: 
+        return False
+
+
+####   Functions end here    ####
 
 
 # TODO why does this statement below cause infinite printing. If put in if statement, only does once in ending position
