@@ -1,3 +1,14 @@
+"""
+More interestingly, spend some time playing with object interactions, adding more objects and classes to your game, and fixing some bugs. Here are some ideas:
+
+Fix the game so it doesn't crash when you go beyond the game board boundaries.
+Add other elements to the game, keys, chests, doors
+Add conditional interactions: a door that won't open unless you have the right colored gem, chests that won't open unless you have the right key.
+Subclass the Character class to make non-player characters that speak messages when you interact with them.
+Tricky: Add blocks that slide when you push them.
+"""
+
+
 import core
 import pyglet
 from pyglet.window import key
