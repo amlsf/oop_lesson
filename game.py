@@ -22,8 +22,8 @@ KEYBOARD = None
 PLAYER = None
 ######################
 
-GAME_WIDTH = 5
-GAME_HEIGHT = 5
+GAME_WIDTH = 10
+GAME_HEIGHT = 12
 
 #### Put class definitions here ####
 
@@ -64,12 +64,53 @@ class Gem(GameElement):
         player.inventory.append(self)
         GAME_BOARD.draw_msg("You just acquired a gem! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
 
+class Door(GameElement):
+    IMAGE = "DoorClosed"
+    SOLID = True
+    LOCKED = True
+
+    # def interact(self, player):
+    #     player.inventory.append(self)
+    #     GAME_BOARD.draw_msg("You just acquired a gem! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
+
+    def interact(self, player):
+    # TODO handle for nothing in list
+        for item in player.inventory:
+            if type(item) == Key and item.KEY == 1:
+                GAME_BOARD.del_el(self.x, self.y)
+        # if key in inventory, change door to non-solid open door
+                GAME_BOARD.draw_msg("Congratulations! You have acquired the correct key to open this door")
+                opendoor1 = OpenedDoor()
+                GAME_BOARD.register(opendoor1)
+                GAME_BOARD.set_el(self.x, self.y, opendoor1)
+            else: 
+                GAME_BOARD.draw_msg("You do not have the right key to unlock this door!")
+
+# TODO how to not make the door disappear when walk through it?
+class OpenedDoor(GameElement):
+    IMAGE = "DoorOpen"
+    SOLID = False
+
+class Wall(GameElement):
+    IMAGE = "Wall"
+    SOLID = True
+
+class Key(GameElement):
+    IMAGE = "Key"
+    SOLID = False
+    KEY = 1
+
+    def interact(self, player):
+        player.inventory.append(self)
+        GAME_BOARD.draw_msg("You just acquired a key! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
+
 ####   End class definitions    ####
 
 
 ####   Functions go here    ####
 
-# put outside of initialize() because gets called separately in engine.py
+# defin function that recognizes key strokes and assigns direction so Character class method can assign new coordinates  below 
+# put this function outside of initialize() because gets called separately in engine.py
 def keyboard_handler():
     direction = None
 
@@ -101,36 +142,31 @@ def keyboard_handler():
         GAME_BOARD.erase_msg()
 
 
-### TODO check bounds probably goes here somewhere, why doesn't check_bounds() print message when walk off board, as part of get_el, set_el, del_el
-
+    # determines next location coordinates based on key strokes above using Character class method next_pos   
     if direction:
         next_location = PLAYER.next_pos(direction)
         next_x = next_location[0]
         next_y = next_location[1]
 
-        # Step 1: Check out of bounds
-        # Check if out of bounds 
-
-        # Step 2: What is in the next position? 
-        #Checks what is in the next position and if the position is off the board
-        print next_x, next_y
+        # Step 1: Check if player trying to step out of bounds
         if not check_bounds2(next_x, next_y):
             GAME_BOARD.draw_msg("You cannot walk off the board")
         else: 
+        # Step 2: Checks if item is there, if so, interact with player
             existing_el = GAME_BOARD.get_el(next_x, next_y)
             if existing_el:
                 existing_el.interact(PLAYER)
-    # TODO This print statement prints any time interact with something, need some sort of if stmt
-                # print "Your current inventory is: ", PLAYER.inventory
             
             # Step 3: Check for features of element in next item            
             # If there's nothing there _or_ if the existing element is not solid, walk through
             if existing_el is None or not existing_el.SOLID:
                 GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
                 GAME_BOARD.set_el(next_x, next_y, PLAYER)
-            else:
+            # If item is solid and not a locked door, print message
+            elif existing_el.SOLID and not hasattr(existing_el, 'LOCKED'):
                 GAME_BOARD.draw_msg("You cannot walk through a solid object")
 
+# Creates function that checks if moving object within boundaries of board
 def check_bounds2(x, y):
     if (0 <= x < GAME_WIDTH) and (0 <= y < GAME_HEIGHT):
         return True
@@ -147,11 +183,6 @@ def check_bounds2(x, y):
 
 def initialize():
     """Put game initialization code here"""
-
-    #Initialize, register, and set on board rock 1
-    rock1 = Rock()
-    GAME_BOARD.register(rock1)
-    GAME_BOARD.set_el(0,0,rock1)
 
     #Initialize and register rock 2
     rock2 = Rock()
@@ -185,11 +216,38 @@ def initialize():
     GAME_BOARD.set_el(2, 2, PLAYER)
     print PLAYER
 
-    # Prints to the game window
+    # Prints message to the game window
     GAME_BOARD.draw_msg("This game is wicked awesome.")
 
-    # initiatlize, registers and sets the gem on the board
+    # initiatlize, registers and sets the additional items to board
     gem = Gem()
     GAME_BOARD.register(gem)
-    GAME_BOARD.set_el(3,1,gem)
+    GAME_BOARD.set_el(8,8,gem)
+
+    door = Door()
+    GAME_BOARD.register(door)
+    GAME_BOARD.set_el(8,9,door)
+
+    wall = Wall()
+    GAME_BOARD.register(wall)
+    GAME_BOARD.set_el(9,8,wall)
+
+    key1 = Key()
+    GAME_BOARD.register(key1)
+    GAME_BOARD.set_el(3,1,key1)
+
+    key2 = Key()
+    GAME_BOARD.register(key2)
+    GAME_BOARD.set_el(6,3,key2)
+    key2.KEY = 2
+
+    # Initialize, register, and sets more walls on board
+    wall_position = [(8,7), (7,8)]
+    walls = []
+
+    for pos in wall_position:
+        wall = Wall()
+        GAME_BOARD.register(wall)
+        GAME_BOARD.set_el(pos[0], pos[1], wall)
+        walls.append(wall)
 
