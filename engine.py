@@ -125,10 +125,8 @@ class Board(object):
 
     def check_bounds(self, x, y):
         if not (0 <= x < self.width):
-            pass
             raise IndexError("%r is out of bounds of the board width: %d"%(x, self.width))
         if not (0 <= y < self.height):
-            pass
             raise IndexError("%r is out of bounds of the board height: %d"%(y, self.width))
 
     def get_el(self, x, y):

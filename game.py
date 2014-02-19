@@ -98,6 +98,8 @@ def keyboard_handler():
     elif KEYBOARD[key.SPACE]:
         GAME_BOARD.erase_msg()
 
+
+### TODO check bounds probably goes here somewhere, why doesn't check_bounds() print message when walk off board, as part of get_el, set_el, del_el
     if direction:
         next_location = PLAYER.next_pos(direction)
         next_x = next_location[0]
