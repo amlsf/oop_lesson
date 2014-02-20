@@ -27,14 +27,6 @@ GAME_HEIGHT = 12
 
 #### Put class definitions here ####
 
-# Creates rock instances of Rock class
-# TODO is Rock a subclass of Subelement that inherits all its properties? 
-class Rock(GameElement):
-    # Pulls image nicknamed Rock from setup_images function in engine.py
-    IMAGE = "Rock"
-    # creates solid attribute so don't have to check if various elements for walking through
-    SOLID = True
-
 # Creates Player Character ot interact with, only instantiated once (not Non-Player Characters)
 class Character(GameElement):
     IMAGE = "Horns"
@@ -56,6 +48,21 @@ class Character(GameElement):
         GameElement.__init__(self)
         self.inventory = []
 
+class SubCharacter(Character):
+    IMAGE = "Cat"
+    SOLID = True
+
+    def interact(self, player):
+        GAME_BOARD.draw_msg("How are you doing today?")
+
+# Creates rock instances of Rock class
+# TODO is Rock a subclass of Subelement that inherits all its properties? 
+class Rock(GameElement):
+    # Pulls image nicknamed Rock from setup_images function in engine.py
+    IMAGE = "Rock"
+    # creates solid attribute so don't have to check if various elements for walking through
+    SOLID = True
+
 class Gem(GameElement):
     IMAGE = "BlueGem"
     SOLID = False
@@ -69,22 +76,22 @@ class Door(GameElement):
     SOLID = True
     LOCKED = True
 
-    # def interact(self, player):
-    #     player.inventory.append(self)
-    #     GAME_BOARD.draw_msg("You just acquired a gem! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
-
     def interact(self, player):
     # TODO handle for nothing in list
-        for item in player.inventory:
-            if type(item) == Key and item.KEY == 1:
-                GAME_BOARD.del_el(self.x, self.y)
-        # if key in inventory, change door to non-solid open door
-                GAME_BOARD.draw_msg("Congratulations! You have acquired the correct key to open this door")
-                opendoor1 = OpenedDoor()
-                GAME_BOARD.register(opendoor1)
-                GAME_BOARD.set_el(self.x, self.y, opendoor1)
-            else: 
-                GAME_BOARD.draw_msg("You do not have the right key to unlock this door!")
+
+        if player.inventory == []:
+            GAME_BOARD.draw_msg("Your inventory is empty! You need a specific key to open this door")
+        else: 
+            for item in player.inventory:   
+                if type(item) == Key and item.KEY == 1:
+                    GAME_BOARD.del_el(self.x, self.y)
+            # if key in inventory, change door to non-solid open door
+                    GAME_BOARD.draw_msg("Congratulations! You have acquired the correct key to open this door")
+                    opendoor1 = OpenedDoor()
+                    GAME_BOARD.register(opendoor1)
+                    GAME_BOARD.set_el(self.x, self.y, opendoor1)
+                else: 
+                    GAME_BOARD.draw_msg("You do not have a right key to unlock this door!")
 
 # TODO how to not make the door disappear when walk through it?
 class OpenedDoor(GameElement):
@@ -103,6 +110,18 @@ class Key(GameElement):
     def interact(self, player):
         player.inventory.append(self)
         GAME_BOARD.draw_msg("You just acquired a key! You have %r items! Your inventory is %r" % (len(player.inventory), player.inventory))
+
+class Block(GameElement):
+    IMAGE = "Block"
+    SOLID = False
+    PUSH = True
+
+# Create blocks that you can push
+    def interact(self, player):
+        GAME_BOARD.set_el(player.x, player.y, PLAYER)
+
+# make sure there's nothing solid in the next item
+# check the direction player is going and push 1 over (x or y +1)
 
 ####   End class definitions    ####
 
@@ -157,14 +176,20 @@ def keyboard_handler():
             if existing_el:
                 existing_el.interact(PLAYER)
             
-            # Step 3: Check for features of element in next item            
-            # If there's nothing there _or_ if the existing element is not solid, walk through
             if existing_el is None or not existing_el.SOLID:
                 GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
                 GAME_BOARD.set_el(next_x, next_y, PLAYER)
-            # If item is solid and not a locked door, print message
-            elif existing_el.SOLID and not hasattr(existing_el, 'LOCKED'):
-                GAME_BOARD.draw_msg("You cannot walk through a solid object")
+            elif existing_el.SOLID and not hasattr(existing_el, 'LOCKED') and not type('character'):
+                 GAME_BOARD.draw_msg("You cannot walk through a solid object")
+            elif existing_el.PUSH:
+                if direction == "right":
+                    GAME_BOARD.set_el(next_x+1, next_y, Block) 
+
+                # GAME_BOARD.set_el(next_x, next_y, PLAYER)
+
+            # If item is a block, delete it and put it in the in the next_x, next y position
+
+
 
 # Creates function that checks if moving object within boundaries of board
 def check_bounds2(x, y):
@@ -216,14 +241,15 @@ def initialize():
     GAME_BOARD.set_el(2, 2, PLAYER)
     print PLAYER
 
+    NPC = SubCharacter()
+    GAME_BOARD.register(NPC)
+    GAME_BOARD.set_el(5, 5, NPC)
+
     # Prints message to the game window
     GAME_BOARD.draw_msg("This game is wicked awesome.")
 
-    # initiatlize, registers and sets the additional items to board
-    gem = Gem()
-    GAME_BOARD.register(gem)
-    GAME_BOARD.set_el(8,8,gem)
-
+    # initialize, registers and sets the additional items to board
+    
     door = Door()
     GAME_BOARD.register(door)
     GAME_BOARD.set_el(8,9,door)
@@ -231,6 +257,10 @@ def initialize():
     wall = Wall()
     GAME_BOARD.register(wall)
     GAME_BOARD.set_el(9,8,wall)
+
+    gem = Gem()
+    GAME_BOARD.register(gem)
+    GAME_BOARD.set_el(8,8,gem)
 
     key1 = Key()
     GAME_BOARD.register(key1)
@@ -240,6 +270,11 @@ def initialize():
     GAME_BOARD.register(key2)
     GAME_BOARD.set_el(6,3,key2)
     key2.KEY = 2
+
+    
+    block = Block()
+    GAME_BOARD.register(block)
+    GAME_BOARD.set_el(6,6,block)
 
     # Initialize, register, and sets more walls on board
     wall_position = [(8,7), (7,8)]
